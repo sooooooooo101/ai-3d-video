@@ -73,6 +73,7 @@ python3 "$SKILL"/scripts/render_batch.py --work-dir . --aspect 9:16 --subtitles 
 |---|---|
 | `fps` / `total_sec` | コマ数と長さ（秒） |
 | `bgm_stop_sec` | BGM を止める時刻。省略すると最後まで鳴る |
+| `sfx[]` | 効果音や環境音（任意）。`file`（dialogue.json からの相対パス）、`start`（鳴らし始める秒）、`volume` |
 | `lines[].role` | 口パクの宛先（`boy`、`df` など。シーン側で `mouth.boy` として受け取る） |
 | `lines[].speaker_id` | VOICEVOX の声の番号。**同じキャラクターは同じ番号にする**（声色違いの番号を混ぜると別人に聞こえます） |
 | `lines[].start` | 話し始める時刻（秒） |

@@ -137,9 +137,11 @@ def main():
     # BGM
     bgm_wav = audio_dir / "bgm.wav"
     if args.bgm:
-        subprocess.run(["ffmpeg", "-y", "-i", args.bgm, "-t", str(bgm_stop_sec), "-ar", "44100", "-ac", "1",
-                        "-af", f"afade=t=out:st={max(0.0, bgm_stop_sec - 0.05):.3f}:d=0.05,apad=whole_dur={total_sec}",
-                        str(bgm_wav)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # Cut the music at bgm_stop_sec, then pad with silence so the track still spans the whole video.
+        subprocess.run(["ffmpeg", "-y", "-i", args.bgm, "-ar", "44100", "-ac", "1",
+                        "-af", f"atrim=0:{bgm_stop_sec},afade=t=out:st={max(0.0, bgm_stop_sec - 0.05):.3f}:d=0.05,"
+                               f"apad=whole_dur={total_sec}",
+                        "-t", str(total_sec), str(bgm_wav)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
         write_synth_bgm(bgm_wav, total_sec, bgm_stop_sec)
 
@@ -152,6 +154,15 @@ def main():
         ms = int(item["start"] * 1000)
         filters.append(f"[{idx}:a]adelay={ms}|{ms},volume=1.4[a{idx}]")
         labels.append(f"[a{idx}]")
+    # Optional sound effects / ambience: "sfx": [{"file": "wind.wav", "start": 5.0, "volume": 0.8}]
+    base_dir = Path(args.script).resolve().parent
+    for sfx in cfg.get("sfx", []):
+        n = len(labels)
+        sfx_path = Path(sfx["file"])
+        inputs += ["-i", str(sfx_path if sfx_path.is_absolute() else base_dir / sfx_path)]
+        ms = int(sfx.get("start", 0) * 1000)
+        filters.append(f"[{n}:a]aresample=44100,adelay={ms}|{ms},volume={sfx.get('volume', 1.0)}[s{n}]")
+        labels.append(f"[s{n}]")
     fstr = ";".join(filters) + ";" + "".join(labels) + f"amix=inputs={len(labels)}:duration=first:normalize=0[out]"
     master_wav = audio_dir / "master_audio.wav"
     subprocess.run(["ffmpeg", "-y", *inputs, "-filter_complex", fstr, "-map", "[out]", "-t", str(total_sec), str(master_wav)],
@@ -167,6 +178,9 @@ def main():
         json.dumps({"fps": fps, "total_sec": total_sec, "timeline": timeline, "mouth_tracks": mouth_tracks}, ensure_ascii=False, indent=2),
         encoding="utf-8"
     )
+    _, master_dur, _ = get_wav_info(master_wav)
+    if master_dur < total_sec - 0.1:
+        sys.exit(f"ERROR: master audio is {master_dur:.2f}s but the video is {total_sec}s.")
     for item in timeline:
         print(f"  {item['id']:>5} {item['role']:>5}  {item['start']:6.2f} -> {item['start'] + item['dur']:6.2f}s  {item['text']}")
     print(f"Done: {master_wav}, subtitles.srt, timing.json")

@@ -38,6 +38,7 @@ python3 "$SKILL"/scripts/render_batch.py --work-dir . --aspect 9:16 --subtitles 
 - `role` names the lip-sync track (`mouth.df`, `mouth.boy` in the scene). `max_dur` time-compresses a line that runs long.
 - **One line per visual cue.** If props appear on separate words ("荷物！ 写真！ 進行も！"), make them separate lines so each `start` can be set.
 - The script prints each line's real start/end; time the choreography from that printout.
+- Sound effects / ambience: top-level `"sfx": [{ "file": "wind.wav", "start": 5.0, "volume": 0.8 }]` (path relative to dialogue.json) is mixed in from `start`.
 - Options: `--bgm file.mp3 --bgm-volume 0.6` (own music), `--require-voicevox` (fail instead of falling back to macOS `say`).
 - Speaker IDs: `references/voicevox_speakers.md`. **Keep one `speaker_id` per character for the whole video** — a style variant (e.g. 39 喜び vs 11 ノーマル) sounds like a different person. Convey emotion with `speed`/`pitch` instead.
 
