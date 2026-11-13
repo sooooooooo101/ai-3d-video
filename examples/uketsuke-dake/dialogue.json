@@ -1,0 +1,17 @@
+{
+  "fps": 15,
+  "total_sec": 15.0,
+  "bgm_stop_sec": 9.9,
+  "lines": [
+    { "id": "L1", "role": "df",  "speaker_id": 8,  "start": 0.15, "max_dur": 1.35, "speed": 1.15, "pitch": 0.02, "text": "受付だけ、お願い！" },
+    { "id": "L2", "role": "boy", "speaker_id": 11, "start": 1.65, "max_dur": 1.20, "speed": 1.15, "pitch": 0.0,  "text": "それなら任せて！" },
+    { "id": "L3a", "role": "df", "speaker_id": 8,  "start": 3.30, "max_dur": 0.95, "speed": 1.2,  "pitch": 0.02, "text": "あと荷物！" },
+    { "id": "L3b", "role": "df", "speaker_id": 8,  "start": 4.35, "max_dur": 0.85, "speed": 1.2,  "pitch": 0.02, "text": "写真！" },
+    { "id": "L3c", "role": "df", "speaker_id": 8,  "start": 5.30, "max_dur": 0.95, "speed": 1.2,  "pitch": 0.02, "text": "進行も！" },
+    { "id": "L4", "role": "boy", "speaker_id": 11, "start": 6.40, "max_dur": 1.60, "speed": 1.1,  "pitch": 0.0,  "text": "受付って、幅広いね？" },
+    { "id": "L5", "role": "df",  "speaker_id": 8,  "start": 8.65, "max_dur": 1.20, "speed": 1.15, "pitch": 0.02, "text": "じゃ、全体よろしく！" },
+    { "id": "L6", "role": "boy", "speaker_id": 11, "start": 10.60, "max_dur": 1.40, "speed": 1.0, "pitch": 0.0,  "text": "受付だけって言ったよね？" },
+    { "id": "L7", "role": "df",  "speaker_id": 8,  "start": 12.10, "max_dur": 1.00, "speed": 1.15, "pitch": 0.03, "text": "頼りにしてる！" },
+    { "id": "L8", "role": "boy", "speaker_id": 11, "start": 13.50, "max_dur": 1.30, "speed": 0.95, "pitch": -0.02, "text": "返事になってない。" }
+  ]
+}

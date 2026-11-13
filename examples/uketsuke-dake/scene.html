@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="three.min.js"></script>
+<script src="characters.js"></script>
+<script src="props.js"></script>
+<script src="stage.js"></script>
+</head>
+<body>
+<script>
+// 「受付だけ」15s / 9:16. Only choreography lives here; models, stage and render plumbing come from the library.
+AI3DStage.start({
+  aspect: '9:16',
+  setup({ THREE, scene, camera, util, layouts }) {
+    const { clamp01, lerp, seg, pulse } = util;
+    const L = layouts.duo916;
+
+    // ---- Stage ----
+    const hall = AI3DProps.createSchoolHall(THREE, scene);
+    hall.deskGroup.position.set(...L.desk.pos);
+    hall.deskGroup.rotation.y = L.desk.rotY;
+    [[-1.0, 0.13, -1.5, 0.2, 1.3], [-1.0, 0.39, -1.5, -0.25, 1.15], [-0.45, 0.11, -1.9, 0.5, 1.1]].forEach(([x, y, z, r, s]) => {
+      const c = AI3DProps.createCardboard(THREE);   // spare boxes: "still setting up"
+      c.mesh.scale.setScalar(s); c.mesh.position.set(x, y, z); c.mesh.rotation.y = r;
+      scene.add(c.mesh);
+    });
+
+    // ---- Characters ----
+    const boy = AI3DChars.createBoy(THREE);
+    boy.group.position.set(...L.boy.pos);
+    boy.group.rotation.y = L.boy.rotY;
+    scene.add(boy.group);
+    const df = AI3DChars.createDragonfly(THREE);
+    df.group.scale.setScalar(L.dragonfly.scale);
+    scene.add(df.group);
+    const HOME = new THREE.Vector3(...L.dragonfly.pos);
+
+    // ---- Cargo: bottom-up stack, handed in from off-screen left ----
+    const stacker = AI3DProps.createStacker(boy.cargoAnchor);
+    const lands = [3.95, 4.95, 5.95];
+    [AI3DProps.createCardboard(THREE), AI3DProps.createCameraProp(THREE), AI3DProps.createClosedLaptop(THREE)]
+      .forEach(p => { stacker.add(p.mesh, p.height); p.mesh.visible = false; });
+    const giveArm = AI3DProps.createHelperArm(THREE, boy.cargoAnchor, 1.6);
+    giveArm.rotation.z = 1.25;                       // reaches in from screen-left
+
+    // ---- Blank sash, put on by a hand from above the frame ----
+    const tasuki = AI3DProps.createTasuki(THREE, boy.torso);
+    const sashArm = AI3DProps.createHelperArm(THREE, boy.torso, 2.6);
+    sashArm.rotation.set(0.18, 0, -0.14);
+
+    return function update(t, mouth) {
+      const mDf = mouth.df || 0, mBoy = mouth.boy || 0;
+
+      // ===== Dragonfly (4 wings, no arms: it points with its whole body) =====
+      df.wingbeat(t, 40, 0.3);
+      df.setMouth(mDf);
+      let dx = 0, dy = Math.sin(t * 5.2) * 0.03, dz = 0, yaw = L.dragonfly.rotY, pitch = L.dragonfly.pitch, roll = 0;
+      const point = seg(t, 0.1, 0.45) * (1 - seg(t, 1.35, 1.75));               // 0-1.5s: points at the desk
+      yaw = lerp(yaw, 0.55, point); pitch = lerp(pitch, 0.6, point);
+      const jab = point * (pulse(t, 0.45, 0.35) + pulse(t, 0.9, 0.35));
+      dx += jab * 0.07; dy -= jab * 0.10 + point * 0.12; dz -= jab * 0.12 + point * 0.1;
+      [3.3, 4.35, 5.3].forEach(s => { const p = pulse(t, s, 0.6); dy += p * 0.10; roll += p * 0.22; });  // calls in each item
+      const breezy = pulse(t, 8.65, 1.2); dy += breezy * 0.08; roll -= breezy * 0.15;
+      if (t >= 12.0 && t < 13.4) dy += Math.abs(Math.sin((t - 12.0) * Math.PI * 3.2)) * 0.24 * (1 - seg(t, 13.1, 13.4)); // happy bounce
+      pitch += mDf * 0.12;
+      df.group.position.set(HOME.x + dx, HOME.y + dy, HOME.z + dz);
+      df.group.rotation.set(0, yaw, roll);
+      df.bodyPivot.rotation.x = pitch;
+
+      // ===== Boy =====
+      boy.setHoldPose(seg(t, 3.0, 3.45));
+      const toCam = seg(t, 9.95, 10.75);                                         // slow turn to camera
+      let hy = lerp(0.42, -0.22, toCam), hx = lerp(-0.2, 0.0, toCam), hz = 0;
+      hx += pulse(t, 2.5, 0.22) * 0.32 + pulse(t, 2.75, 0.22) * 0.26;            // nod
+      lands.forEach(s => { hx += pulse(t, s, 0.3) * 0.12; });
+      const lookStack = seg(t, 6.0, 6.3) * (1 - seg(t, 6.9, 7.3));
+      hx += lookStack * 0.38; hy = lerp(hy, 0.1, lookStack);
+      hz += seg(t, 7.2, 7.5) * (1 - seg(t, 8.0, 8.3)) * 0.16;
+      const lookSash = seg(t, 8.9, 9.2) * (1 - seg(t, 9.6, 9.95));
+      hx += lookSash * 0.3; hy = lerp(hy, 0.0, lookSash);
+      const lastLook = seg(t, 12.2, 12.5) * (1 - seg(t, 13.2, 13.5));
+      hy = lerp(hy, 0.42, lastLook); hx = lerp(hx, -0.2, lastLook);
+      boy.head.rotation.set(hx, hy, hz);
+
+      if (t < 3.6) { boy.setExpression('happy'); boy.setMouth(mBoy, 1.7, 1.4); }
+      else if (t < 5.9) { boy.setExpression('neutral'); boy.setMouth(mBoy, 1.0, 1.0); }
+      else if (t < 9.9) { boy.setExpression('confused', clamp01((t - 5.9) / 0.3)); boy.setMouth(mBoy, 0.9, 1.0); }
+      else { boy.setExpression('deadpan', seg(t, 9.9, 10.5)); boy.setMouth(mBoy * 0.7, 0.85, 1.0); }
+      if ((t % 2.7) > 2.58) boy.eyes.forEach(e => { e.scale.y *= 0.15; });       // blink
+
+      // ===== Cargo hand-off =====
+      giveArm.visible = false;
+      stacker.items.forEach((item, i) => {
+        const land = lands[i], t0 = land - 0.75;
+        item.mesh.visible = t >= t0;
+        if (t < t0) return;
+        const top = AI3DProps.handOff(item, (t - t0) / 0.75);
+        if (t < land + 0.3) {
+          const leave = clamp01((t - land) / 0.3);
+          giveArm.visible = true;
+          giveArm.position.set(item.mesh.position.x - leave * 1.3, top + leave * 0.4, 0.1);
+        }
+      });
+
+      // ===== Sash (8.0-9.05s) =====
+      tasuki.visible = t >= 8.0;
+      tasuki.setPutOn((t - 8.0) / 1.05);
+      const leave = seg(t, 8.95, 9.35);
+      sashArm.visible = t >= 8.0 && leave < 1;
+      sashArm.position.copy(tasuki.grip); sashArm.position.y += leave * 1.9;
+
+      // ===== Camera =====
+      const close = seg(t, 9.95, 10.8) * (1 - seg(t, 12.0, 12.35)), endIn = seg(t, 13.3, 13.9) * 0.6;
+      const tgt = new THREE.Vector3(...L.camera.target), pos = new THREE.Vector3(...L.camera.pos);
+      tgt.lerp(new THREE.Vector3(...L.closeUpBoy.target), close); pos.lerp(new THREE.Vector3(...L.closeUpBoy.pos), close);
+      tgt.lerp(new THREE.Vector3(0.04, 1.03, 0), endIn); pos.lerp(new THREE.Vector3(0.06, 1.3, 3.6), endIn);
+      camera.position.copy(pos); camera.lookAt(tgt);
+    };
+  },
+});
+</script>
+</body>
+</html>
