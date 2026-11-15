@@ -1,0 +1,15 @@
+{
+  "fps": 15,
+  "total_sec": 20.0,
+  "bgm_stop_sec": 7.9,
+  "sfx": [ { "file": "wind.mp3", "start": 5.0, "volume": 1.0 } ],
+  "lines": [
+    { "id": "L1", "role": "boy", "speaker_id": 11, "start": 0.40,  "max_dur": 2.40, "speed": 1.15, "pitch": 0.01,  "text": "受付ここ、看板ここ。完璧！" },
+    { "id": "L2", "role": "df",  "speaker_id": 8,  "start": 3.00,  "max_dur": 1.30, "speed": 1.15, "pitch": 0.02,  "text": "明日、置くだけだね！" },
+    { "id": "L3", "role": "boy", "speaker_id": 11, "start": 5.90,  "max_dur": 1.70, "speed": 1.05, "pitch": 0.0,   "text": "よし、図面どおりに" },
+    { "id": "L4", "role": "boy", "speaker_id": 11, "start": 11.40, "max_dur": 2.20, "speed": 1.0,  "pitch": -0.02, "text": "この木、会議にいなかったよね？" },
+    { "id": "L5", "role": "df",  "speaker_id": 8,  "start": 13.75, "max_dur": 1.15, "speed": 1.1,  "pitch": 0.02,  "text": "たぶん、ずっといたよ。" },
+    { "id": "L6", "role": "boy", "speaker_id": 11, "start": 16.00, "max_dur": 2.00, "speed": 1.0,  "pitch": -0.02, "text": "そこは合ってる。とんぼがいる場所。" },
+    { "id": "L7", "role": "df",  "speaker_id": 8,  "start": 18.10, "max_dur": 0.80, "speed": 1.15, "pitch": 0.03,  "text": "計画どおり！" }
+  ]
+}

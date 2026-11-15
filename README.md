@@ -52,6 +52,18 @@ python3 "$SKILL"/scripts/render_batch.py --work-dir . --aspect 9:16 --subtitles 
 
 2 行目のコマンドで `preview.png`（全体の一覧画像）、3 行目で `out.mp4` ができます。
 
+### サンプル 2 本目：「図面どおり」（20 秒）
+
+場面の切り替え（屋内の会議 → 屋外の当日）、自分の BGM、効果音（風）を使う例です。図面の小道具、屋外の会場、木、看板は `scene.html` の中で組み立てています。
+
+```bash
+cp "$SKILL"/examples/zumen-doori/* .
+python3 "$SKILL"/scripts/audio_pipeline.py --script dialogue.json --out-dir . --bgm bgm_calm.mp3 --bgm-volume 0.9
+python3 "$SKILL"/scripts/render_batch.py --work-dir . --aspect 9:16 --subtitles none --out out.mp4
+```
+
+同梱の `bgm_calm.mp3` と `wind.mp3` はこのリポジトリ用にプログラムで生成した音で、コードと同じ MIT ライセンスで使えます。
+
 ## エージェントへの頼み方
 
 秒数ごとに「誰が何をして、何を言うか」を書くと、質問なしで進みます。
@@ -101,6 +113,7 @@ SKILL.md                 エージェント向けの説明書（部品と寸法�
 assets/                  three.min.js、キャラクター、小道具、描画の土台
 scripts/                 audio_pipeline.py（声・BGM・口パク・字幕）、render_batch.py（描画・書き出し）
 examples/uketsuke-dake/  サンプル「受付だけ」
+examples/zumen-doori/    サンプル「図面どおり」（場面切り替え・BGM・効果音）
 references/              VOICEVOX の声の番号
 ```
 

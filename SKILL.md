@@ -12,7 +12,7 @@ Make 3D animated videos (9:16 shorts or 16:9) with consistent characters, VOICEV
 ## Work cheaply: rules
 
 1. **Do not read the library sources** (`assets/*.js`, `scripts/*.py`). Everything needed is in the API table below. Open a source file only if a call fails.
-2. **Start from the example**, not a blank file: copy `examples/uketsuke-dake/scene.html` and edit the choreography inside `update(t, mouth)`.
+2. **Start from the example**, not a blank file: copy `examples/uketsuke-dake/scene.html` and edit the choreography inside `update(t, mouth)`. For multiple locations/cuts, custom props built in-scene, own BGM and sfx, start from `examples/zumen-doori/` instead (run its audio step with `--bgm bgm_calm.mp3`).
 3. **Use the tested layout** (`layouts.duo916`) instead of working out camera and positions.
 4. **Check with `--preview`**, which makes ONE contact-sheet image (`preview.png`, ~12 s). Look at that single image; do not open individual frames. Do the full render once, at the end.
 5. **Use the ready-made motions** (`handOff`, `tasuki.setPutOn`, `createStacker`) instead of deriving clip-free paths by hand.
