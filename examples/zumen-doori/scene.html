@@ -51,28 +51,15 @@ AI3DStage.start({
 
     // ---- Outdoor (event day) ----
     const outdoor = new THREE.Group(); scene.add(outdoor);
-    const grass = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), mat(0.45, 0.66, 0.38, 0.95));
-    grass.rotation.x = -Math.PI / 2; grass.receiveShadow = true; outdoor.add(grass);
+    AI3DProps.createOutdoor(THREE, outdoor);       // grass + school building in the distance
     box(outdoor, SITE.w, 0.01, SITE.d, mat(0.62, 0.80, 0.52, 0.95), SITE.cx, 0.005, SITE.cz).castShadow = false;
-    const school = box(outdoor, 16, 3.4, 1, mat(0.93, 0.90, 0.83), 0, 1.7, -9.5);
-    for (let i = -3; i <= 3; i++) box(outdoor, 1.3, 1.1, 0.1, mat(0.72, 0.86, 0.95, 0.3), i * 2.1, 2.0, -8.98);
     // the tree nobody put on the plan, standing exactly on the desk mark
     const [tx, tz] = world(MARK.desk);
-    const tree = new THREE.Group(); tree.position.set(tx, 0, tz); outdoor.add(tree);
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.3, 1.7, 12), mat(0.45, 0.30, 0.18));
-    trunk.position.y = 0.85; trunk.castShadow = true; tree.add(trunk);
-    const crown = new THREE.Group(); crown.position.y = 1.6; tree.add(crown);
-    [[0, 0.75, 0, 1.05], [-0.6, 0.45, 0.2, 0.75], [0.6, 0.5, -0.1, 0.8], [0.1, 0.4, 0.55, 0.7]].forEach(([x, y, z, r]) => {
-      const s = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat(0.25, 0.52, 0.24, 0.9));
-      s.position.set(x, y, z); s.castShadow = true; crown.add(s);
-    });
+    const treeProp = AI3DProps.createTree(THREE), tree = treeProp.mesh, crown = treeProp.crown;
+    tree.position.set(tx, 0, tz); outdoor.add(tree);
     // blank standing signboard
     const [sx, sz] = world(MARK.sign);
-    const sign = new THREE.Group(); outdoor.add(sign);
-    box(sign, 0.56, 0.72, 0.04, mat(0.55, 0.40, 0.26), 0, 0.74, 0);
-    box(sign, 0.48, 0.62, 0.02, mat(0.98, 0.98, 0.96, 0.6), 0, 0.75, 0.02);
-    box(sign, 0.05, 0.4, 0.05, mat(0.55, 0.40, 0.26), -0.2, 0.2, 0);
-    box(sign, 0.05, 0.4, 0.05, mat(0.55, 0.40, 0.26), 0.2, 0.2, 0);
+    const sign = AI3DProps.createSignboard(THREE).mesh; outdoor.add(sign);
     // wind streaks
     const streakMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.75 });
     const streaks = Array.from({ length: 14 }, (_, i) => {
