@@ -11,6 +11,30 @@ window.AI3DStage = (function () {
     seg: (t, a, b) => ease((t - a) / (b - a)),
     /** 0 -> 1 -> 0 bump starting at t0 lasting dur. */
     pulse: (t, t0, dur) => { const u = (t - t0) / dur; return u < 0 || u > 1 ? 0 : Math.sin(u * Math.PI); },
+    /** Put a rig (or any object with .group, or an Object3D) on a layout slot { pos, rotY, scale? }. */
+    place(rig, slot) {
+      const o = rig.group || rig;
+      o.position.set(slot.pos[0], slot.pos[1], slot.pos[2]);
+      o.rotation.y = slot.rotY || 0;
+      if (slot.scale) o.scale.setScalar(slot.scale);
+      return o;
+    },
+    /** Aim the camera at shot a ({ pos, target, fov? }), blended toward shot b by k (0..1). */
+    shot(camera, a, b, k = 0) {
+      const mix = (p, q) => (b ? p.map((v, i) => v + (q[i] - v) * k) : p);
+      const pos = mix(a.pos, b && b.pos), tgt = mix(a.target, b && b.target);
+      camera.position.set(pos[0], pos[1], pos[2]);
+      const fa = a.fov || camera.fov, fov = b && b.fov ? fa + (b.fov - fa) * k : fa;
+      if (fov !== camera.fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
+      camera.lookAt(tgt[0], tgt[1], tgt[2]);
+    },
+    /** A close-up shot on a rig, sized by its height: { pos, target } for shot(). side: -1..1 swings the camera. */
+    closeUpOn(rig, dist = 1.5, side = 0) {
+      const o = rig.group || rig, h = rig.height || 1.49;
+      const ty = o.position.y + h * 0.78;
+      const target = [o.position.x, ty, o.position.z];
+      return { pos: [o.position.x + side * dist * 0.5, ty + 0.18, o.position.z + dist], target };
+    },
   };
 
   // Tested framings. Positions are world units (boy is ~1.49 tall).
@@ -23,7 +47,44 @@ window.AI3DStage = (function () {
       dragonfly: { pos: [0.37, 0.95, 0.15], scale: 0.7, rotY: -0.45, pitch: 0.42 },
       desk: { pos: [0.74, 0, -0.8], rotY: -0.25 },
     },
+    // ---- generic layouts: a/b/c = characters (feet at y=0), prop = where a set's main furniture reads well.
+    // All keep heads inside the frame for heights up to 1.25 (1.86 world units) and leave the bottom ~15% as floor.
+    solo916: {
+      camera: { pos: [0, 1.2, 4.3], target: [0, 1.0, 0], fov: 38 },
+      closeUpA: { pos: [0, 1.45, 2.2], target: [0, 1.25, 0] },
+      a: { pos: [0, 0, 0], rotY: 0 },
+      prop: { pos: [0.85, 0, -0.95], rotY: -0.25 },
+    },
+    duoHumans916: {
+      camera: { pos: [0, 1.25, 5.2], target: [0, 1.0, 0], fov: 38 },
+      closeUpA: { pos: [-0.3, 1.45, 2.4], target: [-0.45, 1.2, 0] },
+      closeUpB: { pos: [0.3, 1.45, 2.4], target: [0.45, 1.2, 0] },
+      a: { pos: [-0.45, 0, 0], rotY: 0.3 },
+      b: { pos: [0.45, 0, 0], rotY: -0.3 },
+      prop: { pos: [0.85, 0, -1.2], rotY: -0.25 },
+    },
+    trio916: {
+      camera: { pos: [0, 1.3, 6.2], target: [0, 1.0, 0], fov: 38 },
+      closeUpA: { pos: [-0.5, 1.45, 2.6], target: [-0.7, 1.2, 0.15] },
+      closeUpB: { pos: [0, 1.45, 2.3], target: [0, 1.2, -0.25] },
+      closeUpC: { pos: [0.5, 1.45, 2.6], target: [0.7, 1.2, 0.15] },
+      a: { pos: [-0.7, 0, 0.15], rotY: 0.35 },
+      b: { pos: [0, 0, -0.25], rotY: 0 },
+      c: { pos: [0.7, 0, 0.15], rotY: -0.35 },
+      prop: { pos: [1.1, 0, -1.4], rotY: -0.25 },
+    },
+    duo169: {
+      camera: { pos: [0, 1.2, 4.0], target: [0, 0.95, 0], fov: 38 },
+      closeUpA: { pos: [-0.35, 1.4, 2.3], target: [-0.6, 1.2, 0] },
+      closeUpB: { pos: [0.35, 1.4, 2.3], target: [0.6, 1.2, 0] },
+      a: { pos: [-0.6, 0, 0], rotY: 0.3 },
+      b: { pos: [0.6, 0, 0], rotY: -0.3 },
+      prop: { pos: [1.7, 0, -1.0], rotY: -0.3 },
+    },
   };
+  layouts.duo916.a = layouts.duo916.boy;          // aliases so code can treat every layout alike
+  layouts.duo916.mascot = layouts.duo916.dragonfly;
+  layouts.duo916.closeUpA = layouts.duo916.closeUpBoy;
 
   function addDefaultLights(THREE, scene) {
     scene.add(new THREE.HemisphereLight(0xffffff, 0xd9c2a0, 1.5));

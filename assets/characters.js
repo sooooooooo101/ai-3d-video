@@ -413,7 +413,7 @@ window.AI3DChars = (function () {
   const MASCOT_SPEC = {
     body: '#f2a541', belly: '#fff1d6', eyeWhite: '#ffffff', pupil: '#2a1d14', mouthColor: '#5a2a1a',
     cheeks: null, size: 1, shape: 'round', ears: null, wings: null, wingColor: null, tail: null,
-    beak: null, float: false, antenna: false,
+    beak: null, float: false, antenna: false, feet: true,
   };
   /**
    * Round mascot. Contract: { group, body (=bodyPivot), head, mouth, eyes, setMouth, setExpression, look, blink, flap }.
@@ -516,7 +516,7 @@ window.AI3DChars = (function () {
       tl.position.set(0, -halfH * 0.35, -R * az - 0.08 * s); tl.rotation.x = -1.0; tl.castShadow = true;
       bodyPivot.add(tl);
     }
-    if (!spec.float) {
+    if (!spec.float && spec.feet) {
       for (const sx of [-1, 1]) sph(group, 0.055 * s, 1, 0.55, 1.3, bodyM, sx * R * 0.42, 0.03 * s, 0.03 * s);
     }
 

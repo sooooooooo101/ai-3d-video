@@ -141,7 +141,7 @@ window.AI3DProps = (function () {
       const mon = createMonitor(THREE); mon.mesh.position.set(0, desk.height, -0.15); desk.mesh.add(mon.mesh);
       const mug = createMug(THREE, { color: '#c0392b' }); mug.mesh.position.set(0.42, desk.height, 0.12); desk.mesh.add(mug.mesh);
       const papers = createPaper(THREE); papers.mesh.position.set(-0.38, desk.height, 0.1); papers.mesh.rotation.y = 0.3; desk.mesh.add(papers.mesh);
-      const chair = at(createChair(THREE, { color: '#3d4a57' }), 0.95, -0.35, Math.PI - 0.25);
+      const chair = at(createChair(THREE, { color: '#3d4a57' }), 0.95, -1.65, -0.25);
       const desk2 = at(createTable(THREE, { w: 1.3, d: 0.7, top: '#e6e1d8', legs: '#555b60' }), -1.7, -1.9, 0.15);
       const mon2 = createMonitor(THREE); mon2.mesh.position.set(0, desk2.height, -0.15); desk2.mesh.add(mon2.mesh);
       const shelf = at(createShelf(THREE, { color: '#b7a58c' }), 2.5, -3.15);
