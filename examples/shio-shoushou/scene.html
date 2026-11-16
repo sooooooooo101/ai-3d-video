@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="three.min.js"></script>
+<script src="characters.js"></script>
+<script src="cast.js"></script>
+<script src="props.js"></script>
+<script src="stage.js"></script>
+</head>
+<body>
+<script>
+// 「塩少々」12s / 9:16. Built from kikaku.md: chef (left) + robot (right) in the kitchen set.
+AI3DStage.start({
+  aspect: '9:16',
+  setup({ THREE, scene, camera, util, layouts }) {
+    const { clamp01, lerp, seg, pulse } = util;
+    const L = layouts.duoHumans916;
+
+    // ---- Set ----
+    const set = AI3DProps.createSet(THREE, scene, 'kitchen');
+    set.main.position.set(0.95, 0, -1.05);          // island counter behind the robot
+
+    // ---- Cast ----
+    const chef = AI3DChars.create('chef', THREE);
+    util.place(chef, L.a); scene.add(chef.group);
+    const robot = AI3DChars.create('robot', THREE);
+    util.place(robot, L.b); scene.add(robot.group);
+
+    // A plate resting on the chef's left hand (child of the forearm, so it follows the arm).
+    const plate = AI3DProps.createPlate(THREE, { color: '#2f5d8a' });
+    plate.mesh.position.set(0, -0.24, 0.105);
+    plate.mesh.rotation.x = 1.5;                    // level while the arm is in the carry pose
+    chef.arms.L.fore.add(plate.mesh);
+    const food = AI3DProps.createBox(THREE, 0.12, 0.05, 0.09, '#d9822b');
+    food.mesh.position.y = plate.height; plate.mesh.add(food.mesh);
+
+    const tip = robot.parts.antennaTip.material;
+    const tipOn = new THREE.Color('#ff5a4a'), tipOff = new THREE.Color('#5a1e1a');
+    const wide = { pos: L.camera.pos, target: L.camera.target };
+
+    return function update(t, mouth) {
+      const mChef = mouth.chef || 0, mRobot = mouth.robot || 0;
+
+      // ===== Chef =====
+      chef.setArm('L', { forward: 0.45, out: 0.08, bend: 1.05 });                    // holds the plate
+      const pointAt = seg(t, 0.35, 0.7) * (1 - seg(t, 1.7, 2.1));                     // "塩、少々ね。"
+      const shrug = pulse(t, 5.2, 1.3);                                               // "…勘だよ、勘。"
+      chef.setArm('R', { forward: 1.05 * pointAt + 0.35 * shrug, out: 0.08 + 0.3 * pointAt + 0.55 * shrug, bend: 0.3 * pointAt + 1.3 * shrug });
+      chef.torso.position.y = 0.61 + shrug * 0.025;
+      const toCam = seg(t, 9.9, 10.4);
+      chef.group.rotation.y = lerp(L.a.rotY, 0, toCam);
+      let yaw = 0.15, pitch = 0.38;                                                   // eyes on the plate
+      const glance = seg(t, 3.4, 3.7) * (1 - seg(t, 4.6, 4.9));
+      yaw = lerp(yaw, 0.45, glance); pitch = lerp(pitch, 0.05, glance);
+      const away = seg(t, 5.0, 5.3) * (1 - seg(t, 6.7, 7.0));
+      yaw = lerp(yaw, -0.45, away); pitch = lerp(pitch, -0.05, away);
+      const watch = seg(t, 7.6, 8.0) * (1 - toCam);
+      yaw = lerp(yaw, 0.5, watch); pitch = lerp(pitch, 0.0, watch);
+      yaw = lerp(yaw, 0, toCam); pitch = lerp(pitch, 0, toCam);
+      chef.look(yaw, pitch, 0.06 * away);
+      if (t < 5.0) { chef.setExpression('neutral'); chef.setMouth(mChef, 1.0, 1.0); }
+      else if (t < 9.9) { chef.setExpression('confused', clamp01((t - 5.0) / 0.3)); chef.setMouth(mChef, 0.9, 1.0); }
+      else { chef.setExpression('deadpan', seg(t, 9.9, 10.3)); chef.setMouth(mChef * 0.75, 0.85, 1.0); }
+      chef.blink(t, 2.9);
+
+      // ===== Robot =====
+      const nod = pulse(t, 1.35, 0.3) + pulse(t, 1.7, 0.3);
+      const tilt = seg(t, 2.1, 2.5) * (1 - seg(t, 4.5, 4.9));                          // "何グラムですか？"
+      const proud = seg(t, 7.2, 7.5) * (1 - seg(t, 10.6, 11.2));                       // "ダウンロードします"
+      const spin = proud * Math.sin(t * 14) * 0.22;
+      robot.look(-0.35 + spin + 0.2 * proud, 0.3 * nod - 0.12 * proud, 0.32 * tilt);
+      robot.torso.rotation.x = -0.08 * proud;
+      robot.setArm('L', { forward: 0.5 * proud, out: 0.08 + 0.3 * proud, bend: 0.9 * proud });   // chef side: stays close
+      robot.setArm('R', { forward: 0.25 * proud, out: 0.08 + 0.7 * proud, bend: 0.3 * proud });
+      robot.setExpression(proud > 0.5 ? 'happy' : tilt > 0.5 ? 'confused' : 'neutral');
+      robot.setMouth(mRobot, 1.1, 1.0);
+      robot.blink(t, 3.3, 0.12, 1.1);
+      const rate = t >= 7.25 && t < 10.6 ? 10 : (t >= 2.0 && t < 4.6 ? 3 : 0);       // antenna blinks while thinking
+      tip.color.copy(rate && Math.sin(t * rate * Math.PI) < 0 ? tipOff : tipOn);
+
+      // ===== Camera: wide, then in on the chef for the punchline =====
+      util.shot(camera, wide, util.closeUpOn(chef, 2.6, 0.15), seg(t, 9.95, 10.6));
+    };
+  },
+});
+</script>
+</body>
+</html>
