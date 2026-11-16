@@ -66,7 +66,7 @@ Every **humanoid** returns:
 Props attach to `cargoAnchor` (in front of the chest at carry height) and `torso`; both scale with the character, so stacker/handOff/tasuki/helper arms work on every humanoid.
 
 Every **mascot** returns `group, body (= bodyPivot), head, mouth, eyes, wings, height, faceY` and `setMouth(level)`, `setExpression(mode,k)`, `look(x, y)` (pupils, −1..1), `blink(t)`, `flap(t, speed=24, amp=0.35)` (= `wingbeat`). Turn the whole mascot with `group.rotation`, tilt with `body.rotation`. Mascots have **no hands**: they gesture with the body.
-The dragonfly additionally has `bodyPivot` pitch (~0.42 so its wings read from the camera) and `wingbeat(t, speed, amp)`.
+The dragonfly's `setExpression` / `look` / `blink` do nothing (it has no eyelids; turn its body instead). It additionally has `bodyPivot` pitch (~0.42 so its wings read from the camera) and `wingbeat(t, speed, amp)`.
 
 ### Adding a character
 1. Simple: add an entry to `window.AI3DCast` in `assets/cast.js` (copy the closest one, change colours/styles). It is registered automatically.

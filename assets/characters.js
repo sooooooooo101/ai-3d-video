@@ -397,7 +397,9 @@ window.AI3DChars = (function () {
     }
 
     const rig = {
-      group, bodyPivot, body: bodyPivot, head, mouth, wings, faceY: 1.0,
+      group, bodyPivot, body: bodyPivot, head, mouth, wings, faceY: 1.0, height: 1.1, eyes: [],
+      // Mascot-contract stubs: the dragonfly shows mood and gaze with its whole body (group/bodyPivot rotation).
+      setExpression() {}, look() {}, blink() {},
       wingbeat(t, speed = 24, amp = 0.25) {
         wings.forEach(w => {
           w.pivot.rotation.z = Math.sin(t * speed) * amp * (-w.sign);
