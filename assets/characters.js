@@ -178,6 +178,7 @@ window.AI3DChars = (function () {
       addBox(THREE, head, 0, gy, 1.285, 0.05, 0.01, 0.01, gm, P);
       for (const sx of [-1, 1]) addBox(THREE, head, sx * 0.195, -0.11, 1.29, 0.012, 0.15, 0.012, gm, P);
     }
+    const parts = {};                     // optional accessories, for effects (e.g. blinking antenna tip)
     if (spec.hat) {
       const hm = mat(spec.hatColor || ({ chef: '#f7f7f4', helmet: '#f2c230', antenna: '#9aa3ad' }[spec.hat] || '#2f5fa8'));
       if (spec.hat === 'cap') {
@@ -201,6 +202,7 @@ window.AI3DChars = (function () {
         stick.position.y = 1.52 - 1.07; head.add(stick);
         const ball = new THREE.Mesh(new THREE.SphereGeometry(0.035, 14, 10), mat(spec.antennaTip || '#ff5a4a', 0.4));
         ball.position.y = 1.6 - 1.07; head.add(ball);
+        parts.antennaTip = ball;
       }
     }
 
@@ -263,9 +265,11 @@ window.AI3DChars = (function () {
     const headTop = { cap: 1.53, chef: 1.83, helmet: 1.6, beanie: 1.6, antenna: 1.64 }[spec.hat] || 1.49;
     const sgn = side => (side === 'L' ? -1 : 1);
     const rig = {
-      group, torso, head, arms, legs, eyes, browL, browR, mouth, cargoAnchor, spec,
+      group, torso, head, arms, legs, eyes, browL, browR, mouth, cargoAnchor, spec, parts,
       /** World height of the top of the head (incl. hat) when group.scale is left as built. */
       height: headTop * spec.height,
+      /** World height of the face centre (for close-ups). */
+      faceY: 1.265 * spec.height,
       materials: { skin, hair, cream: top, vest: accent, shorts: bottom, shoe, eyeMat,
         top, topAccent: accent, bottom, socks, shoes: shoe, eye: eyeMat },
       setHoldPose(blend) {
@@ -393,7 +397,7 @@ window.AI3DChars = (function () {
     }
 
     const rig = {
-      group, bodyPivot, body: bodyPivot, head, mouth, wings,
+      group, bodyPivot, body: bodyPivot, head, mouth, wings, faceY: 1.0,
       wingbeat(t, speed = 24, amp = 0.25) {
         wings.forEach(w => {
           w.pivot.rotation.z = Math.sin(t * speed) * amp * (-w.sign);
@@ -522,6 +526,7 @@ window.AI3DChars = (function () {
 
     const rig = {
       group, body: bodyPivot, bodyPivot, head, mouth, eyes, wings, spec,
+      faceY: spec.float ? 1.0 : halfH + 0.035 * s,
       height: (spec.float ? 1.0 + halfH : halfH * 2 + 0.035 * s) + (spec.ears === 'bunny' ? 0.25 * s : spec.ears ? 0.08 * s : 0),
       setMouth(rms) {
         if (spec.beak) mouth.scale.set(1, 1, 1 + (rms || 0) * 0.6);

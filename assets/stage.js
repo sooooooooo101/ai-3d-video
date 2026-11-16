@@ -28,12 +28,14 @@ window.AI3DStage = (function () {
       if (fov !== camera.fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
       camera.lookAt(tgt[0], tgt[1], tgt[2]);
     },
-    /** A close-up shot on a rig, sized by its height: { pos, target } for shot(). side: -1..1 swings the camera. */
-    closeUpOn(rig, dist = 1.5, side = 0) {
-      const o = rig.group || rig, h = rig.height || 1.49;
-      const ty = o.position.y + h * 0.78;
-      const target = [o.position.x, ty, o.position.z];
-      return { pos: [o.position.x + side * dist * 0.5, ty + 0.18, o.position.z + dist], target };
+    /** Chest-up close-up on a rig (uses rig.faceY / rig.height and group scale): { pos, target } for shot().
+     *  dist: camera distance (2.6 suits 9:16, ~1.8 for 16:9). side: -1..1 swings the camera sideways. */
+    closeUpOn(rig, dist = 2.6, side = 0) {
+      const o = rig.group || rig, k = o.scale ? o.scale.y : 1;
+      const face = rig.faceY !== undefined ? rig.faceY * (rig.spec && rig.spec.height ? k / rig.spec.height : k)
+        : (rig.height || 1.49) * 0.78;
+      const ty = o.position.y + face - 0.12;
+      return { pos: [o.position.x + side * dist * 0.4, ty + 0.15, o.position.z + dist], target: [o.position.x, ty, o.position.z] };
     },
   };
 
@@ -51,16 +53,16 @@ window.AI3DStage = (function () {
     // All keep heads inside the frame for heights up to 1.25 (1.86 world units) and leave the bottom ~15% as floor.
     solo916: {
       camera: { pos: [0, 1.2, 4.3], target: [0, 1.0, 0], fov: 38 },
-      closeUpA: { pos: [0, 1.45, 2.2], target: [0, 1.25, 0] },
+      closeUpA: { pos: [0, 1.45, 2.6], target: [0, 1.2, 0] },
       a: { pos: [0, 0, 0], rotY: 0 },
       prop: { pos: [0.85, 0, -0.95], rotY: -0.25 },
     },
     duoHumans916: {
       camera: { pos: [0, 1.25, 5.2], target: [0, 1.0, 0], fov: 38 },
-      closeUpA: { pos: [-0.3, 1.45, 2.4], target: [-0.45, 1.2, 0] },
-      closeUpB: { pos: [0.3, 1.45, 2.4], target: [0.45, 1.2, 0] },
-      a: { pos: [-0.45, 0, 0], rotY: 0.3 },
-      b: { pos: [0.45, 0, 0], rotY: -0.3 },
+      closeUpA: { pos: [-0.35, 1.45, 2.6], target: [-0.5, 1.2, 0] },
+      closeUpB: { pos: [0.35, 1.45, 2.6], target: [0.5, 1.2, 0] },
+      a: { pos: [-0.5, 0, 0], rotY: 0.3 },
+      b: { pos: [0.5, 0, 0], rotY: -0.3 },
       prop: { pos: [0.85, 0, -1.2], rotY: -0.25 },
     },
     trio916: {
