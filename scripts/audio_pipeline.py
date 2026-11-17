@@ -66,7 +66,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--script", required=True, help="Path to dialogue.json")
     ap.add_argument("--out-dir", required=True, help="Output directory")
-    ap.add_argument("--bgm", help="Optional BGM audio file to use instead of the built-in synth loop")
+    ap.add_argument("--bgm", help="BGM audio file to use instead of the built-in synth loop, or 'none' for no music")
     ap.add_argument("--bgm-volume", type=float, default=0.85)
     ap.add_argument("--require-voicevox", action="store_true", help="Fail instead of falling back to macOS say")
     args = ap.parse_args()
@@ -136,7 +136,9 @@ def main():
 
     # BGM
     bgm_wav = audio_dir / "bgm.wav"
-    if args.bgm:
+    if args.bgm and args.bgm.lower() == "none":
+        write_synth_bgm(bgm_wav, total_sec, 0.0)  # silence: the video has no music
+    elif args.bgm:
         # Cut the music at bgm_stop_sec, then pad with silence so the track still spans the whole video.
         subprocess.run(["ffmpeg", "-y", "-i", args.bgm, "-ar", "44100", "-ac", "1",
                         "-af", f"atrim=0:{bgm_stop_sec},afade=t=out:st={max(0.0, bgm_stop_sec - 0.05):.3f}:d=0.05,"
