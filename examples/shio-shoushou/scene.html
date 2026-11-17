@@ -25,10 +25,10 @@ AI3DStage.start({
     const chef = AI3DChars.create('chef', THREE);
     // The chef holds a plate out in front, so he stands a little inward and turned toward the robot
     // (layout slot a puts the held plate at the frame edge).
-    const CHEF = { pos: [-0.4, 0, 0.05], rotY: 0.55 };
+    const CHEF = { pos: [-0.42, 0, 0.05], rotY: 0.45 };
     util.place(chef, CHEF); scene.add(chef.group);
     const robot = AI3DChars.create('robot', THREE);
-    util.place(robot, L.b); scene.add(robot.group);
+    util.place(robot, { pos: [0.56, 0, -0.05], rotY: -0.35 }); scene.add(robot.group);
 
     // A plate resting on the chef's left hand (child of the forearm, so it follows the arm).
     const plate = AI3DProps.createPlate(THREE, { color: '#2f5d8a' });
@@ -40,7 +40,7 @@ AI3DStage.start({
 
     const tip = robot.parts.antennaTip.material;
     const tipOn = new THREE.Color('#ff5a4a'), tipOff = new THREE.Color('#5a1e1a');
-    const wide = { pos: [0.06, 1.32, 7.0], target: [0.06, 1.0, 0] };   // both arms, the plate and the robot's raised arms stay in frame
+    const wide = { pos: [0.08, 1.13, 5.7], target: [0.08, 1.05, 0] };   // full bodies large; plate and raised arms stay in frame
     const close = util.closeUpOn(chef, 3.0);           // framed a little to the left so the plate stays fully in
     close.pos[0] -= 0.14; close.target[0] -= 0.14;
 
@@ -48,10 +48,10 @@ AI3DStage.start({
       const mChef = mouth.chef || 0, mRobot = mouth.robot || 0;
 
       // ===== Chef =====
-      chef.setArm('L', { forward: 0.45, out: 0.08, bend: 1.05 });                    // holds the plate
+      chef.setArm('L', { forward: 0.3, out: 0.08, bend: 1.2 });                      // holds the plate close to the body
       const pointAt = seg(t, 0.35, 0.7) * (1 - seg(t, 1.7, 2.1));                     // "塩、少々ね。"
       const shrug = pulse(t, 5.2, 1.3);                                               // "…勘だよ、勘。"
-      chef.setArm('R', { forward: 1.05 * pointAt + 0.35 * shrug, out: 0.08 + 0.3 * pointAt + 0.55 * shrug, bend: 0.3 * pointAt + 1.3 * shrug });
+      chef.setArm('R', { forward: 0.75 * pointAt + 0.55 * shrug, out: 0.08 + 0.12 * pointAt + 0.22 * shrug, bend: 0.65 * pointAt + 1.35 * shrug });
       chef.torso.position.y = 0.61 + shrug * 0.025;
       const toCam = seg(t, 9.9, 10.4);
       chef.group.rotation.y = lerp(CHEF.rotY, 0, toCam);
@@ -72,12 +72,12 @@ AI3DStage.start({
       // ===== Robot =====
       const nod = pulse(t, 1.35, 0.3) + pulse(t, 1.7, 0.3);
       const tilt = seg(t, 2.1, 2.5) * (1 - seg(t, 4.5, 4.9));                          // "何グラムですか？"
-      const proud = seg(t, 7.2, 7.5) * (1 - seg(t, 10.6, 11.2));                       // "ダウンロードします"
+      const proud = seg(t, 7.2, 7.5) * (1 - seg(t, 9.8, 10.3));                       // "ダウンロードします"
       const spin = proud * Math.sin(t * 14) * 0.22;
       robot.look(-0.35 + spin + 0.2 * proud, 0.3 * nod - 0.12 * proud, 0.32 * tilt);
       robot.torso.rotation.x = -0.08 * proud;
-      robot.setArm('L', { forward: 0.5 * proud, out: 0.08 + 0.3 * proud, bend: 0.9 * proud });   // chef side: stays close
-      robot.setArm('R', { forward: 0.3 * proud, out: 0.08 + 0.55 * proud, bend: 0.35 * proud });
+      robot.setArm('L', { forward: 0.6 * proud, out: 0.08, bend: 1.1 * proud });   // chef side: hand stays in front of its own chest
+      robot.setArm('R', { forward: 0.45 * proud, out: 0.08 + 0.4 * proud, bend: 0.8 * proud });
       robot.setExpression(proud > 0.5 ? 'happy' : tilt > 0.5 ? 'confused' : 'neutral');
       robot.setMouth(mRobot, 1.1, 1.0);
       robot.blink(t, 3.3, 0.12, 1.1);
