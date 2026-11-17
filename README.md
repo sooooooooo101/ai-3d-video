@@ -64,8 +64,7 @@ Gemini CLI なら `~/.gemini/config/skills/ai-3d-video` など、それぞれの
 
 <img src="docs/cast.png" width="600" alt="出演者一覧">
 
-上の段、左から：少年 `boy`／女の子 `girl`／会社員 `officeWorker`／コックさん `chef`／おばあちゃん `grandma`／ロボット `robot`／店員さん `clerk`
-下の段、左から：とんぼ `dragonfly`／ねこ `cat`／ひよこ `chick`／スライム `slime`
+絵の下に、企画書で使う日本語の名前と、エージェントが使う名前を書いてあります。上の段は人の形の出演者 7 人（少年 `boy`／女の子 `girl`／会社員 `officeWorker`／コックさん `chef`／おばあちゃん `grandma`／ロボット `robot`／店員さん `clerk`）、下の段は人の形でない相棒 4 体（とんぼ `dragonfly`／ねこ `cat`／ひよこ `chick`／スライム `slime`）です。相棒には手がありません。
 
 企画書では日本語の名前で選べば十分です。一覧に無い見た目は、言葉で書いてください（例：「メガネの先生、紺のジャケット、ボブヘア」）。エージェントが設定を作ります。
 
@@ -110,7 +109,7 @@ python3 "$SKILL"/scripts/audio_pipeline.py --script dialogue.json --out-dir . --
 python3 "$SKILL"/scripts/render_batch.py --work-dir . --aspect 9:16 --subtitles none --out out.mp4
 ```
 
-同梱の `bgm_calm.mp3` と `wind.mp3` はこのリポジトリ用にプログラムで生成した音で、コードと同じ MIT ライセンスで使えます。
+同梱の `bgm_calm.mp3`（のんびり）、`wind.mp3`（風の音）、`assets/bgm_tense.mp3`（ドキドキ）はこのリポジトリ用にプログラムで生成した音で、コードと同じ MIT ライセンスで使えます。
 
 ### サンプル 3 本目：「塩少々」（12 秒）
 
@@ -174,7 +173,7 @@ python3 "$SKILL"/scripts/render_batch.py --work-dir . --aspect 9:16 --subtitles 
 
 | コマンド | オプション |
 |---|---|
-| `audio_pipeline.py` | `--bgm 曲.mp3`（自分の曲を使う）、`--bgm-volume 0.6`、`--require-voicevox`（VOICEVOX が無ければ止まる） |
+| `audio_pipeline.py` | `--bgm 曲.mp3`（自分の曲を使う）、`--bgm none`（音楽なし）、`--bgm-volume 0.6`、`--require-voicevox`（VOICEVOX が無ければ止まる） |
 | `render_batch.py` | `--preview`（下見）、`--step 5`（下見のコマ間隔）、`--subtitles burn`（字幕を焼き込む）、`--timeout 600`、`--chrome`、`--subtitle-font` |
 
 ## フォルダ構成
@@ -200,7 +199,17 @@ VOICEVOX:春日部つむぎ
 VOICEVOX:玄野武宏
 ```
 
-「塩少々」では `VOICEVOX:青山龍星`、`VOICEVOX:ナースロボ＿タイプＴ` を使っています。
+「塩少々」では次の 2 つの声を使っています。
+
+```text
+VOICEVOX:青山龍星
+VOICEVOX:ナースロボ＿タイプＴ
+```
+
+どちらも、この表記を入れれば商用・非商用で使えるとされています（VOICEVOX 0.26.1 に同梱の規約文による）。ただし青山龍星は、**企業が関わる形で使う場合は事前の確認が必要**とされています。
+
+- 青山龍星：https://www.virvoxproject.com/voicevoxの利用規約
+- ナースロボ＿タイプＴ：https://www.krnr.top/rules
 
 春日部つむぎ・玄野武宏は、この表記を入れれば商用・非商用で使えるとされています（VOICEVOX 0.26.1 に同梱の規約文による）。規約は変わることがあるので、公開前に各キャラクターの最新の利用規約を確認してください。
 
@@ -219,7 +228,7 @@ VOICEVOX:玄野武宏
 ## 既知の制限
 
 - 既定は 15fps です。口パクもこの細かさで作られます。
-- 同梱の BGM は簡単な電子音です。作品には `--bgm` で自分の曲を指定することをおすすめします。
+- 同梱の BGM（内蔵の明るいループ、のんびり、ドキドキ）は簡単な電子音です。作品には `--bgm` で自分の曲を指定することをおすすめします。
 - 描画はソフトウェア処理（SwiftShader）なので、複雑なシーンでは時間がかかります。
 - VOICEVOX が起動していない macOS では、警告を出したうえで OS の読み上げ音声に切り替わります（声は変わります）。
 

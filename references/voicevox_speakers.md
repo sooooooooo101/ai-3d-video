@@ -25,4 +25,8 @@ Bundled examples: 8 春日部つむぎ (dragonfly), 11 玄野武宏 (boy), 13 �
 
 ## Terms of use
 
+Bundled-example voices (policy text from the engine's `/speaker_info`, VOICEVOX 0.26.1):
+- 13 青山龍星: credit `VOICEVOX:青山龍星`; commercial and non-commercial use OK for individuals. Use involving a company needs prior confirmation from the rights holder.
+- 47 ナースロボ＿タイプＴ: credit `VOICEVOX:ナースロボ＿タイプＴ`; commercial and non-commercial use OK.
+
 Every voice has its own terms, and almost all require a credit line such as `VOICEVOX:春日部つむぎ` when the audio is published. Some restrict commercial use, certain genres, or require extra permission. **Before publishing, check the terms of each voice you used** (VOICEVOX app → キャラクター → 利用規約, or https://voicevox.hiroshiba.jp/term/), and tell the user which credit lines are needed.

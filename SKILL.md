@@ -27,16 +27,21 @@ Make 3D animated videos (9:16 shorts or 16:9) with consistent characters, VOICEV
 
 | 企画書 | → | Implementation |
 |---|---|---|
-| 向き / 長さ | → | `--aspect 9:16`/`16:9`, `total_sec`; layout `*916` / `duo169` |
+| 誰に見せる / どこに載せる | → | tone and length only. Shorts/TikTok/Reels → 9:16; YouTube (normal), slides, TV → 16:9 when 向き is おまかせ |
+| 雰囲気 | → | コメディ: quick lines (`speed` 1.1–1.2), a beat of silence + `deadpan` look to camera for the punchline, 明るい music · ほのぼの: `speed` 0.95–1.0, `happy`, のんびり music · 解説: `solo916`/`duo169`, narrator voice 30, steady pace, subtitles burn if おまかせ · 感動: slow (`speed` ~0.9), longer pauses, のんびり music, no joke ending · シュール: `deadpan`, few gestures, ドキドキ or 音楽なし · その他: follow the user's words |
+| 向き / 長さ | → | 縦 `--aspect 9:16`, 横 `16:9`; `total_sec` (おまかせ → 12–15 s); layout by head count: 1 `solo916`, 2 `duoHumans916` (human + flying mascot `duo916`), 3 `trio916`, 横 `duo169` |
 | 登場人物・見た目 | → | 少年 `boy`, 女の子 `girl`, 会社員 `officeWorker`, コックさん `chef`, おばあちゃん `grandma`, ロボット `robot`, 店員さん `clerk`, とんぼ `dragonfly`, ねこ `cat`, ひよこ `chick`, スライム `slime`; described in words → `AI3DChars.define(name, spec)` (or a cast.js entry) |
-| 声の感じ | → | `speaker_id` from `references/voicevox_speakers.md` (one id per character, all video) |
+| 声の感じ | → | 明るい / 落ち着いた / 元気な子ども / 低め / かわいい / お年寄り / ロボットっぽい → the table in `references/voicevox_speakers.md`; おまかせ → that table's "Fits" column for the character, keeping every character's voice different. One id per character, all video |
 | 性格 / 表情・動き | → | `setExpression`, `look`, `point`, `speed`/`pitch` of lines |
-| 場所 | → | 学校のホール `schoolHall`, 会社 `office`, キッチン `kitchen`, リビング `livingRoom`, お店 `shop`, 公園 `park`; otherwise `createRoom` / `createOutdoor` + props |
+| 場所 | → | 学校のホール `schoolHall`, 会社 `office`, キッチン `kitchen`, リビング `livingRoom`, お店 `shop`, 公園 `park`; その他 → `createRoom` / `createOutdoor` + props; おまかせ → the set that fits the story |
+| 出てくる物・持っている物 | → | props from `references/api.md`; carried → `createStacker`; held in one hand → child of `rig.arms.L.fore` |
 | 流れ（表） | → | one `lines[]` entry per spoken cue; beats timed from the audio printout |
-| 音楽の雰囲気 / 止める瞬間 / 効果音 | → | built-in loop (明るい) or `--bgm file` (e.g. `examples/zumen-doori/bgm_calm.mp3` = のんびり), `bgm_stop_sec`, `sfx[]` |
+| 音楽の雰囲気 | → | 明るい: built-in loop (no `--bgm`) · のんびり: `--bgm "$SKILL"/examples/zumen-doori/bgm_calm.mp3` · ドキドキ: `--bgm "$SKILL"/assets/bgm_tense.mp3` · 音楽なし: `--bgm none` · おまかせ: by 雰囲気 (row above) |
+| 音楽を止めたい瞬間 / 効果音 | → | `bgm_stop_sec` (omit = to the end); `sfx[]`. Bundled sound: `examples/zumen-doori/wind.mp3` only. Other sounds need a file from the user; without one, leave it out and mark （仮） |
 | 字幕 | → | `--subtitles burn` (動画に入れる) or `none` (なし / あとで自分で: `subtitles.srt` is still written) |
 | 画面内の文字 | → | keep props blank unless 入れたい (then say text is added in editing) |
 | こだわり | → | add to the Quality-rules check of `preview.png` |
+| 参考 | → | use for mood and pacing only; do not copy someone else's characters, footage or music |
 
 5. Change requests: edit `kikaku.md` first, then the video. The plan sheet is the source of truth.
 6. In the final report, list every item you decided provisionally (（仮）) and the voice credit lines needed.
@@ -64,7 +69,7 @@ python3 "$SKILL"/scripts/render_batch.py --work-dir . --aspect 9:16 --subtitles 
 - **One line per visual cue.** If props appear on separate words ("荷物！ 写真！ 進行も！"), make them separate lines so each `start` can be set.
 - The script prints each line's real start/end; time the choreography from that printout.
 - Sound effects / ambience: top-level `"sfx": [{ "file": "wind.mp3", "start": 5.0, "volume": 0.8 }]` (path relative to dialogue.json).
-- Options: `--bgm file.mp3 --bgm-volume 0.6` (own music), `--require-voicevox` (fail instead of falling back to macOS `say`).
+- Options: `--bgm file.mp3 --bgm-volume 0.6` (own music; bundled: `examples/zumen-doori/bgm_calm.mp3` calm, `assets/bgm_tense.mp3` tense), `--bgm none` (no music), `--require-voicevox` (fail instead of falling back to macOS `say`).
 - **Keep one `speaker_id` per character for the whole video**; convey emotion with `speed`/`pitch`.
 
 ### render_batch.py
@@ -88,7 +93,7 @@ Cast: humanoids `boy girl officeWorker chef grandma robot clerk`; mascots `drago
 Side `'L'` = screen-left when facing the camera. Spec height is already in `group.scale`.
 **Mascot** — `group, body, head, mouth, eyes, height, faceY` + `setMouth`, `setExpression`, `look(x,y)`, `blink(t)`, `flap(t)`. **Mascots and the dragonfly never get arms/hands**; they gesture with the whole body. Dragonfly: `bodyPivot.rotation.x ≈ 0.42` so the wings read; body at local y=1.0.
 
-**New character** — add a spec to `assets/cast.js` (copy the closest entry), or in a scene: `AI3DChars.define('teacher', { ...AI3DChars.specs.officeWorker, hairStyle: 'bob', glasses: '#333' })`. Humanoid spec keys: colours `skin hair top topAccent bottom socks shoes eye glasses tie apron cheeks hatColor`; `hairStyle short|bob|long|ponytail|bun|cap|bald`; `hat cap|chef|helmet|beanie|antenna`; `topAccentStyle vest|jacket`; `bottomStyle shorts|pants|skirt`; `sleeves short|long`; `height`, `build`, `headScale`. Mascot keys: `body belly cheeks size shape(round|tall|blob) ears(cat|bear|bunny) wings(bird|bug) tail(round|long) beak float feet`. Colours `'#rrggbb'`.
+**New character** — add a spec to `assets/cast.js` (copy the closest entry), or in a scene: `AI3DChars.define('teacher', { ...AI3DChars.specs.officeWorker, hairStyle: 'bob', glasses: '#333' })`. Humanoid spec keys: colours `skin hair top topAccent bottom socks shoes eye glasses tie apron cheeks hatColor`; `hairStyle short|bob|long|ponytail|bun|cap|bald`; `hat cap|chef|helmet|beanie|antenna`; `topAccentStyle vest|jacket`; `bottomStyle shorts|pants|skirt`; `sleeves short|long`; `height`, `build`, `headScale`. Mascot keys: `body belly cheeks size shape(round|tall|blob) ears(cat|bear|bunny) earInner wings(bird|bug) tail(round|long) tailTip beak muzzle nose whiskers float feet` (a cat reads as a cat with ears:'cat', tail:'long', whiskers, nose, muzzle — see `cat` in cast.js). Colours `'#rrggbb'`.
 
 **Sets** — `AI3DProps.createSet(THREE, scene, 'schoolHall'|'office'|'kitchen'|'livingRoom'|'shop'|'park')` → `{ root, main, mainTopY, …refs }` (`main` = key furniture back-right; move it freely). Build others with `createRoom(THREE, parent, {floor, wall, windows, banner})` / `createOutdoor(THREE, parent, {ground, sky, buildings})`.
 

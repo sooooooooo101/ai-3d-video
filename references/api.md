@@ -29,7 +29,7 @@ Load order in scene.html: `three.min.js, characters.js, cast.js, props.js, stage
 | `robot` | humanoid | metal head, antenna (`rig.parts.antennaTip`), cyan eyes | 1.72 |
 | `clerk` | humanoid | bob hair, green cap + apron | 1.68 |
 | `dragonfly` | mascot | orange, 4 wings, **no arms** | body at local y=1.0 |
-| `cat` | mascot | standing orange cat, ears, tail | 0.63 |
+| `cat` | mascot | standing orange cat: pointed ears, whiskers, pink nose, curled striped-tip tail | 0.64 |
 | `chick` | mascot | flying yellow chick, beak, wings | body at local y=1.0 |
 | `slime` | mascot | green blob, no feet | 0.45 |
 
@@ -43,7 +43,9 @@ Load order in scene.html: `three.min.js, characters.js, cast.js, props.js, stage
 ### Mascot spec
 `body belly eyeWhite pupil mouthColor cheeks` colours · `size` (1 ≈ 0.5 tall) · `shape: 'round'|'tall'|'blob'` ·
 `ears: null|'cat'|'bear'|'bunny'` · `wings: null|'bird'|'bug'`, `wingColor` · `tail: null|'round'|'long'` · `beak` colour (replaces the mouth) ·
-`float` (hover with body at local y=1.0, like the dragonfly) · `feet` (default true when standing) · `antenna`.
+`float` (hover with body at local y=1.0, like the dragonfly) · `feet` (default true when standing) · `antenna` ·
+`earInner` (inner-ear colour, cat ears) · `tailTip` (tip colour of the long tail, which curls out to the side and up so it reads from the front) ·
+`muzzle` (snout patch colour; mouth and nose sit on it) · `nose` (small triangle nose colour) · `whiskers` (colour; 3 per side).
 
 ### Rig contract
 
