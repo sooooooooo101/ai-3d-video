@@ -8,7 +8,8 @@
 //   height(1 = boy 1.49) build(body width, 0.85..1.25) headScale glasses tie apron cheeks hairTie
 //   hat('cap'|'chef'|'helmet'|'beanie'|'antenna') hatColor metallic antennaTip
 // mascot keys (kind:'mascot'): body belly eyeWhite pupil mouthColor cheeks size shape('round'|'tall'|'blob')
-//   ears(null|'cat'|'bear'|'bunny') wings(null|'bird'|'bug') wingColor tail(null|'round'|'long') beak float antenna feet
+//   ears(null|'cat'|'bear'|'bunny') earInner wings(null|'bird'|'bug') wingColor tail(null|'round'|'long') tailTip beak float antenna feet
+//   muzzle nose whiskers (colours; a cat reads best with ears:'cat', tail:'long', whiskers, nose, muzzle)
 // Colours: '#rrggbb' as picked in any colour picker.
 window.AI3DCast = {
   // ---- humanoids ----
@@ -51,7 +52,8 @@ window.AI3DCast = {
   // ---- mascots ----
   cat: {
     kind: 'mascot', note: 'standing orange cat',
-    body: '#f0a04b', belly: '#fff2df', ears: 'cat', tail: 'long', cheeks: '#f6a6a0', size: 1.1,
+    body: '#f0a04b', belly: '#fff2df', ears: 'cat', earInner: '#f6b3b0', tail: 'long', tailTip: '#c8742a',
+    muzzle: '#fff6ea', nose: '#e8737a', whiskers: '#3a2a20', cheeks: '#f6a6a0', size: 1.1,
   },
   chick: {
     kind: 'mascot', note: 'flying yellow chick',

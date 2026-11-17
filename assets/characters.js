@@ -420,6 +420,7 @@ window.AI3DChars = (function () {
     body: '#f2a541', belly: '#fff1d6', eyeWhite: '#ffffff', pupil: '#2a1d14', mouthColor: '#5a2a1a',
     cheeks: null, size: 1, shape: 'round', ears: null, wings: null, wingColor: null, tail: null,
     beak: null, float: false, antenna: false, feet: true,
+    whiskers: null, muzzle: null, nose: null, earInner: null, tailTip: null,
   };
   /**
    * Round mascot. Contract: { group, body (=bodyPivot), head, mouth, eyes, setMouth, setExpression, look, blink, flap }.
@@ -470,9 +471,27 @@ window.AI3DChars = (function () {
       mouth.rotation.x = Math.PI / 2; mouth.position.set(0, -halfH * 0.05, fz + 0.03 * s);
       head.add(mouth);
     } else {
+      let mz = fz * 0.97;
+      if (spec.muzzle) {                  // snout patch; the mouth and nose sit on its front
+        sph(head, 0.05 * s, 1.5, 0.95, 0.6, mat(spec.muzzle), 0, -halfH * 0.13, fz * 0.9).castShadow = false;
+        mz = fz * 0.9 + 0.031 * s;
+      }
       mouth = new THREE.Mesh(new THREE.BoxGeometry(0.07 * s, 0.018 * s, 0.02 * s), mat(spec.mouthColor));
-      mouth.position.set(0, -halfH * 0.16, fz * 0.97);
+      mouth.position.set(0, -halfH * 0.25, mz);
+      if (!spec.muzzle) mouth.position.y = -halfH * 0.16;
       head.add(mouth);
+      if (spec.nose) {
+        const n = new THREE.Mesh(new THREE.ConeGeometry(0.017 * s, 0.022 * s, 3), mat(spec.nose, 0.4));
+        n.rotation.set(-Math.PI / 2, 0, Math.PI); n.position.set(0, -halfH * 0.05, mz + 0.006 * s); head.add(n);
+      }
+      if (spec.whiskers) {
+        const wm = mat(spec.whiskers, 0.5);
+        for (const sx of [-1, 1]) for (const a of [-0.22, 0, 0.22]) {
+          const w = new THREE.Mesh(new THREE.BoxGeometry(0.15 * s, 0.006 * s, 0.006 * s), wm);
+          w.position.set(sx * (0.075 * s + 0.07 * s * Math.cos(a)), -halfH * 0.13 + 0.07 * s * Math.sin(a), mz - 0.004 * s);
+          w.rotation.z = sx * a; head.add(w);
+        }
+      }
     }
     if (spec.cheeks) for (const sx of [-1, 1]) {
       sph(head, 0.03 * s, 1.2, 0.7, 0.3, mat(spec.cheeks), sx * eyeX * 1.45, -halfH * 0.08, fz * 0.86).castShadow = false;
@@ -481,9 +500,14 @@ window.AI3DChars = (function () {
     const topY = halfH;
     if (spec.ears === 'cat') {
       for (const sx of [-1, 1]) {
-        const e = new THREE.Mesh(new THREE.ConeGeometry(0.065 * s, 0.13 * s, 4), bodyM);
-        e.position.set(sx * R * 0.55, topY * 0.92, 0); e.rotation.set(0, Math.PI / 4, -sx * 0.3); e.castShadow = true;
+        const e = new THREE.Mesh(new THREE.ConeGeometry(0.075 * s, 0.17 * s, 4), bodyM);
+        e.position.set(sx * R * 0.52, topY * 0.95, 0); e.rotation.set(0, Math.PI / 4, -sx * 0.32); e.castShadow = true;
         head.add(e);
+        if (spec.earInner) {
+          const ei = new THREE.Mesh(new THREE.ConeGeometry(0.042 * s, 0.11 * s, 3), mat(spec.earInner));
+          ei.position.set(sx * R * 0.52 - sx * 0.006 * s, topY * 0.95 - 0.01 * s, 0.035 * s); ei.rotation.set(0.05, 0, -sx * 0.32);
+          head.add(ei);
+        }
       }
     } else if (spec.ears === 'bear') {
       for (const sx of [-1, 1]) sph(head, 0.065 * s, 1, 1, 0.7, bodyM, sx * R * 0.62, topY * 0.85, 0);
@@ -518,9 +542,19 @@ window.AI3DChars = (function () {
     }
     if (spec.tail === 'round') sph(bodyPivot, 0.06 * s, 1, 1, 1, mat(spec.belly || spec.body), 0, -halfH * 0.4, -R * az * 0.98);
     else if (spec.tail === 'long') {
-      const tl = new THREE.Mesh(new THREE.CylinderGeometry(0.018 * s, 0.025 * s, 0.32 * s, 10), bodyM);
-      tl.position.set(0, -halfH * 0.35, -R * az - 0.08 * s); tl.rotation.x = -1.0; tl.castShadow = true;
-      bodyPivot.add(tl);
+      // Curls out to the character's side and up, so it reads from the front camera.
+      const pts = [[0.35, -0.55, -0.85], [0.8, -0.45, -0.75], [1.15, -0.15, -0.6], [1.3, 0.25, -0.45], [1.2, 0.62, -0.35]]
+        .map(([x, y, z]) => new THREE.Vector3(x * R, y * halfH, z * R * az));
+      const tipM = spec.tailTip ? mat(spec.tailTip) : bodyM;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i], b = pts[i + 1], len = a.distanceTo(b), r = 0.026 * s * (1 - i * 0.12);
+        const seg = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.88, r, len, 10), i === pts.length - 2 ? tipM : bodyM);
+        seg.position.copy(a).add(b).multiplyScalar(0.5);
+        seg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
+        seg.castShadow = true; bodyPivot.add(seg);
+        const j = new THREE.Mesh(new THREE.SphereGeometry(r * 0.9, 10, 8), i === pts.length - 2 ? tipM : bodyM);
+        j.position.copy(b); bodyPivot.add(j);
+      }
     }
     if (!spec.float && spec.feet) {
       for (const sx of [-1, 1]) sph(group, 0.055 * s, 1, 0.55, 1.3, bodyM, sx * R * 0.42, 0.03 * s, 0.03 * s);
